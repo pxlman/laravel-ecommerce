@@ -10,46 +10,51 @@ class CartController extends Controller
 {
     public function index()
     {
+        if (!Auth::check()) {
+            return redirect()->route('login.index');
+        }
         $cartItems = Cart::where('user_id', auth()->id())
             ->with('product')
             ->get();
-
         return view('cart.index', compact('cartItems'));
     }
 
     public function add($productId)
     {
-        $relation = Auth::user()->products()->where('product_id', $productId);
-
-        if ($relation->exists()) {
-            $oldQuantity = $relation->first(['quantity'])->quantity;
-
-            Auth::user()->products()->updateExistingPivot($productId, 
-                ['quantity' => $oldQuantity + 1]
-            );
-
+        $cartItem = Cart::where('user_id', auth()->id())
+            ->where('product_id', $productId)
+            ->first();
+        if ($cartItem) {
+            $cartItem->quantity++;
+            $cartItem->save();
         } else {
-            Auth::user()->products()->attach($productId, ['quantity' => 1]);
+            Cart::create(['user_id' => auth()->id(), 'product_id' => $productId, 'quantity' => 1]);
         }
-        return redirect()->route('homepage.index');
+        
+        return back();
     }
 
     public function remove($productId)
     {
-        $relation = Auth::user()->products()->where('product_id', $productId);
-        if ($relation->exists()) {
-            $oldQuantity = $relation->first(['quantity'])->quantity;
+        Cart::where('user_id', auth()->id())
+            ->where('product_id', $productId)
+            ->delete();
+        
+        return back();
+    }
 
-            if ($oldQuantity > 1) {
-                Auth::user()->products()->updateExistingPivot($productId, 
-                    ['quantity' => $oldQuantity - 1]
-                );
-            } else {
-                $relation->detach();
-            }
-
+    public function decrement($productId)
+    {
+        $cartItem = Cart::where('user_id', auth()->id())
+            ->where('product_id', $productId)
+            ->first();
+        if ($cartItem->quantity > 1) {
+            $cartItem->quantity--;
+            $cartItem->save();
+        } else {
+            $cartItem->delete();
         }
-        return redirect()->route('cart.index');
+        return back();
     }
 
     public function checkout()

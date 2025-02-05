@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <h2>Products</h2>
+    <h2 class="text-center">Products</h2>
     <br>
     <div class="d-flex flex-wrap gap-5 mx-3">
         @foreach ($products as $product)

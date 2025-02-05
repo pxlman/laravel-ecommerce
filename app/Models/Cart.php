@@ -20,4 +20,9 @@ class Cart extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    public function totalPrice()
+    {
+        return $this->product->price * $this->quantity;
+    }
 } 

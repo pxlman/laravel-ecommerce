@@ -47,16 +47,16 @@ class User extends Authenticatable
         ];
     }
 
-    public function products()
+    public function cart()
     {
-        return $this->belongsToMany(Product::class);
+        return $this->hasMany(Cart::class);
     }
 
     public function totalCartPrice()
     {
         $total = 0;
-        foreach ($this->products as $product) {
-            $total += $product->price * $product->pivot->quantity;
+        foreach ($this->cart as $cartItem) {
+            $total += $cartItem->totalPrice();
         }
         return $total;
     }
