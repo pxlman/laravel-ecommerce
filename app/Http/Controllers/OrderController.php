@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Order;
+use App\Models\Cart;
 
 use PaypalServerSdkLib\Authentication\ClientCredentialsAuthCredentialsBuilder;
 use PaypalServerSdkLib\Environment;
@@ -50,14 +51,12 @@ class OrderController extends Controller
             "jsonResponse" => json_decode($apiResponse->getBody(), true),
             "status" => $apiResponse->getStatusCode(),
         ];
-
-        // $order = Order::create([
-        //     'order_id' => $response["jsonResponse"]["id"],
-        //     'status' => $response["status"],
-        //     'payer_id' => $request['jsonResponse']['payer_id'],
-        //     'cart' => $request['cart'],
-        // ]);
-
+        $order = Order::updateOrCreate([
+            'order_id' => $response["jsonResponse"]["id"],
+            'status' => $response["status"],
+            'payer_id' => $request["payer_id"],
+            'cart' => $request["cart"],
+        ]);
         return response()->json($response["jsonResponse"]);
     }
     public function capture($orderId){
@@ -66,19 +65,19 @@ class OrderController extends Controller
             "id" => $orderId,
         ];
 
-
         $apiResponse = $client->getOrdersController()->ordersCapture($captureBody);
 
+        $order = Order::where('order_id', $orderId)->first();
+        $order->status = $apiResponse->getStatusCode();
+        $order->save();
 
-        // $order = Order::where('order_id', $orderId)->first();
-        // $order->status = $apiResponse->getStatusCode();
-        // $order->save();
+        $response = json_decode($apiResponse->getBody(), true);
 
-        $response = [
-            "jsonResponse" => json_decode($apiResponse->getBody(), true),
-            "status" => $apiResponse->getStatusCode(),
-        ];
+        if($response['status'] == "COMPLETED"){
+            $payerId = Order::where('order_id', $orderId)->first(['payer_id'])->payer_id;
+            Cart::where('user_id', $payerId)->delete();
+        }
 
-        return response()->json($response["jsonResponse"]);
+        return response()->json($response);
     }
 }

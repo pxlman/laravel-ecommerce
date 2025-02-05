@@ -43,8 +43,12 @@
             @vite('resources/js/app.js')
         </div>
         <br>
-        <div class="border-top border-primary mt-3" id="paypal-button-container"></div>
-        <p id="result-message"></p>
+        @if(Auth::user()->totalCartPrice() > 0)
+            <div class="border-top border-primary mt-3" id="paypal-button-container"></div>
+            <p id="result-message"></p>
+        @else
+            <p>Your cart is empty</p>
+        @endif
     </div>
 </div>
 @endsection
