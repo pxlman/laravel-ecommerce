@@ -10,11 +10,18 @@
                     <h5 class="card-title">{{ $product->name }}</h5>
                     <p class="card-text">{{ $product->description }}</p>
                     <p class="card-text text-secondary">{{ $product->price }}$</p>
-                    {{-- <a href="{{ route('cart.add', $product->id) }}" class="btn btn-primary">Add to Cart</a> --}}
-                    <form action="{{ route('cart.add', $product->id) }}" method="post">
-                        @csrf
-                        <button type="submit" class="btn btn-primary">Add to Cart</button>
-                    </form>
+                    @if (\App\Models\Cart::where('user_id', auth()->id())->where('product_id', $product->id)->exists())
+                        <form action="{{ route('cart.remove', $product->id) }}" method="post">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger">Remove from Cart</button>
+                        </form>
+                    @else
+                        <form action="{{ route('cart.add', $product->id) }}" method="post">
+                            @csrf
+                            <button type="submit" class="btn btn-primary">Add to Cart</button>
+                        </form>
+                    @endif
                 </div>
             </div>
         @endforeach
