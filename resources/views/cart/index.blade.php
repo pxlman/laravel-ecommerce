@@ -4,14 +4,14 @@
 <div>
     <h1>Cart</h1>
     <div class="d-flex flex-wrap gap-5 mx-3">
-        @foreach ($products as $product)
+        @foreach ($cartItems as $cartItem)
             <div class="card text-dark bg-light border-primary mx-4" style="width: 18rem;">
                 <div class="card-body">
-                    <h5 class="card-title">{{ $product->name }}</h5>
-                    <p class="card-text">{{ $product->description }}</p>
-                    <p class="card-text text-secondary">{{ $product->price }}$</p>
-                    <p class="card-text text-secondary">Quantity: {{ $product->pivot->quantity }}</p>
-                    <form action="{{ route('cart.remove', $product->id) }}" method="post">
+                    <h5 class="card-title">{{ $cartItem->product->name }}</h5>
+                    <p class="card-text">{{ $cartItem->product->description }}</p>
+                    <p class="card-text text-secondary">{{ $cartItem->product->price }}$</p>
+                    <p class="card-text text-secondary">Quantity: {{ $cartItem->quantity }}</p>
+                    <form action="{{ route('cart.remove', $cartItem->product_id) }}" method="post">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger">Remove</button>

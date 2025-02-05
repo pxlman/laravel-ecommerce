@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cart;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -9,11 +10,11 @@ class CartController extends Controller
 {
     public function index()
     {
-        if (!Auth::check()) {
-            return redirect()->route('login.index');
-        }
-        $products = Auth::user()->products()->get();
-        return view('cart.index', ['products' => $products]);
+        $cartItems = Cart::where('user_id', auth()->id())
+            ->with('product')
+            ->get();
+
+        return view('cart.index', compact('cartItems'));
     }
 
     public function add($productId)
