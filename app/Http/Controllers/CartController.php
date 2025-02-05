@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -64,5 +65,19 @@ class CartController extends Controller
         if($relation->exists()){
             dd($relation->get(['quantity'])->first()->quantity);
         }
+    }
+    public function fetch(){
+        $response = [
+            "cart" => Auth::user()->cart()->with('product')->get()->map(function($item) {
+                return [
+                    "id" => $item->product_id,
+                    "quantity" => $item->quantity,
+                    "price" => $item->product->price,
+                ];
+
+            }),
+            "payer_id" => Auth::user()->id,
+        ];
+        return $response;
     }
 }
